@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { World } from './world';
+import { Player } from './player';
 import { createUI } from './ui';
 
 const stats = new Stats();
@@ -33,6 +34,8 @@ const world = new World();
 world.generate();
 scene.add(world);
 
+const player = new Player(scene);
+
 const setupLights = () => {
   const sun = new THREE.DirectionalLight();
   sun.position.set(50, 50, 50);
@@ -55,12 +58,15 @@ const setupLights = () => {
 };
 
 // Render loop
+let previousTime = performance.now();
 const animate = () => {
+  let currentTime = performance.now();
+  let dt = (currentTime - previousTime) / 1000;
   requestAnimationFrame(animate);
-  // cube.rotation.x += 0.01
-  // cube.rotation.y += 0.01
-  renderer.render(scene, camera);
+  player.applyInputs(dt);
+  renderer.render(scene, player.camera);
   stats.update();
+  previousTime = currentTime;
 };
 
 window.addEventListener('resize', () => {
