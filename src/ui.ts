@@ -1,15 +1,19 @@
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { World } from './world';
 import { resources } from './blocks';
+import { Player } from './player';
 
-export const createUI = (world: World) => {
+export const createUI = (world: World, player: Player) => {
   const gui = new GUI();
 
-  gui.add(world.size, 'width', 8, 128, 1).name('Width');
-  gui.add(world.size, 'height', 8, 128, 1).name('Height');
-  gui.add(world.params, 'hideTerrain').name('Hide Terrain');
+  const playerFoloder = gui.addFolder('Player');
+  playerFoloder.add(player, 'maxSpeed', 1, 20).name('Max Speed');
+  playerFoloder.add(player.cameraHelper, 'visible').name('Show Camera Holder');
 
   const terrainFolder = gui.addFolder('Terrain');
+  terrainFolder.add(world.size, 'width', 8, 128, 1).name('Width');
+  terrainFolder.add(world.size, 'height', 8, 128, 1).name('Height');
+  terrainFolder.add(world.params, 'hideTerrain').name('Hide Terrain');
   terrainFolder.add(world.params, 'seed', 1, 10000).name('Seed');
   terrainFolder.add(world.params.terrain, 'scale', 10, 100).name('Scale');
   terrainFolder.add(world.params.terrain, 'magnitude', 0, 1).name('Magnitude');

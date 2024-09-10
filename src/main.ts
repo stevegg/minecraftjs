@@ -4,6 +4,7 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { World } from './world';
 import { Player } from './player';
 import { createUI } from './ui';
+import { Physics } from './physics';
 
 const stats = new Stats();
 document.body.append(stats.dom);
@@ -18,14 +19,14 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 // Camera setup
-const camera = new THREE.PerspectiveCamera(
+const orbitCamera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight
 );
 
-camera.position.set(-32, 16, -32);
-camera.lookAt(0, 0, 0);
-const controls = new OrbitControls(camera, renderer.domElement);
+orbitCamera.position.set(-32, 16, -32);
+orbitCamera.lookAt(0, 0, 0);
+const controls = new OrbitControls(orbitCamera, renderer.domElement);
 controls.target.set(16, 0, 16);
 
 // Scene setup
@@ -35,6 +36,7 @@ world.generate();
 scene.add(world);
 
 const player = new Player(scene);
+const physics = new Physics(scene);
 
 const setupLights = () => {
   const sun = new THREE.DirectionalLight();
@@ -62,19 +64,27 @@ let previousTime = performance.now();
 const animate = () => {
   let currentTime = performance.now();
   let dt = (currentTime - previousTime) / 1000;
+
   requestAnimationFrame(animate);
-  player.applyInputs(dt);
-  renderer.render(scene, player.camera);
+
+  physics.update(dt, player, world);
+  renderer.render(
+    scene,
+    player.controls.isLocked ? player.camera : orbitCamera
+  );
   stats.update();
+
   previousTime = currentTime;
 };
 
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+  orbitCamera.aspect = window.innerWidth / window.innerHeight;
+  orbitCamera.updateProjectionMatrix();
+  player.camera.aspect = window.innerWidth / window.innerHeight;
+  player.camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 setupLights();
-createUI(world);
+createUI(world, player);
 animate();
